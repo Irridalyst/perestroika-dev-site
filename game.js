@@ -1,0 +1,352 @@
+(function() {
+  var game;
+  var ui;
+
+  var DateOptions = {hour: 'numeric',
+                 minute: 'numeric',
+                 second: 'numeric',
+                 year: 'numeric',
+                 month: 'short',
+                 day: 'numeric' };
+
+  var main = function(dendryUI) {
+    ui = dendryUI;
+    game = ui.game;
+
+    // Add your custom code here.
+  };
+
+  var TITLE = "Social Democracy: An Alternate History" + '_' + "Autumn Chen";
+
+  // the url is a link to game.json
+  // test url: https://aucchen.github.io/social_democracy_mods/v0.1.json
+  // TODO; 
+  window.loadMod = function(url) {
+      ui.loadGame(url);
+  };
+
+  window.showStats = function() {
+    if (window.dendryUI.dendryEngine.state.sceneId.startsWith('library')) {
+        window.dendryUI.dendryEngine.goToScene('backSpecialScene');
+    } else {
+        window.dendryUI.dendryEngine.goToScene('library');
+    }
+  };
+
+  window.showMods = function() {
+    window.hideOptions();
+    if (window.dendryUI.dendryEngine.state.sceneId.startsWith('mod_loader')) {
+        window.dendryUI.dendryEngine.goToScene('backSpecialScene');
+    } else {
+        window.dendryUI.dendryEngine.goToScene('mod_loader');
+    }
+  };
+  
+  window.showOptions = function() {
+      var save_element = document.getElementById('options');
+      window.populateOptions();
+      save_element.style.display = "block";
+      if (!save_element.onclick) {
+          save_element.onclick = function(evt) {
+              var target = evt.target;
+              var save_element = document.getElementById('options');
+              if (target == save_element) {
+                  window.hideOptions();
+              }
+          };
+      }
+  };
+
+  window.hideOptions = function() {
+      var save_element = document.getElementById('options');
+      save_element.style.display = "none";
+  };
+
+  window.disableBg = function() {
+      window.dendryUI.disable_bg = true;
+      document.body.style.backgroundImage = 'none';
+      window.dendryUI.saveSettings();
+  };
+
+  window.enableBg = function() {
+      window.dendryUI.disable_bg = false;
+      window.dendryUI.setBg(window.dendryUI.dendryEngine.state.bg);
+      window.dendryUI.saveSettings();
+  };
+
+  window.disableAnimate = function() {
+      window.dendryUI.animate = false;
+      window.dendryUI.saveSettings();
+  };
+
+  window.enableAnimate = function() {
+      window.dendryUI.animate = true;
+      window.dendryUI.saveSettings();
+  };
+
+  window.disableAnimateBg = function() {
+      window.dendryUI.animate_bg = false;
+      window.dendryUI.saveSettings();
+  };
+
+  window.enableAnimateBg = function() {
+      window.dendryUI.animate_bg = true;
+      window.dendryUI.saveSettings();
+  };
+
+  window.disableAudio = function() {
+      window.dendryUI.toggle_audio(false);
+      window.dendryUI.saveSettings();
+  };
+
+  window.enableAudio = function() {
+      window.dendryUI.toggle_audio(true);
+      window.dendryUI.saveSettings();
+  };
+
+  window.enableImages = function() {
+      window.dendryUI.show_portraits = true;
+      window.dendryUI.saveSettings();
+  };
+
+  window.disableImages = function() {
+      window.dendryUI.show_portraits = false;
+      window.dendryUI.saveSettings();
+  };
+
+  window.enableLightMode = function() {
+      window.dendryUI.dark_mode = false;
+      document.body.classList.remove('dark-mode');
+      window.dendryUI.saveSettings();
+  };
+  window.enableDarkMode = function() {
+      window.dendryUI.dark_mode = true;
+      document.body.classList.add('dark-mode');
+      window.dendryUI.saveSettings();
+  };
+
+  // populates the checkboxes in the options view
+  window.populateOptions = function() {
+    var disable_bg = window.dendryUI.disable_bg;
+    var animate = window.dendryUI.animate;
+    var disable_audio = window.dendryUI.disable_audio;
+    var show_portraits = window.dendryUI.show_portraits;
+    if (disable_bg) {
+        $('#backgrounds_no')[0].checked = true;
+    } else {
+        $('#backgrounds_yes')[0].checked = true;
+    }
+    if (animate) {
+        $('#animate_yes')[0].checked = true;
+    } else {
+        $('#animate_no')[0].checked = true;
+    }
+    if (disable_audio) {
+        $('#audio_no')[0].checked = true;
+    } else {
+        $('#audio_yes')[0].checked = true;
+    }
+    if (show_portraits) {
+        $('#images_yes')[0].checked = true;
+    } else {
+        $('#images_no')[0].checked = true;
+    }
+    if (window.dendryUI.dark_mode) {
+        $('#dark_mode')[0].checked = true;
+    } else {
+        $('#light_mode')[0].checked = true;
+    }
+  };
+
+  
+  // This function allows you to modify the text before it's displayed.
+  // E.g. wrapping chat-like messages in spans.
+  window.displayText = function(text) {
+      return text;
+  };
+
+  // This function allows you to do something in response to signals.
+  window.handleSignal = function(signal, event, scene_id) {
+  };
+  
+  // This function runs on a new page. Right now, this auto-saves.
+  window.onNewPage = function() {
+    var scene = window.dendryUI.dendryEngine.state.sceneId;
+    if (scene != 'root' && !window.justLoaded) {
+        window.dendryUI.autosave();
+    }
+    if (window.justLoaded) {
+        window.justLoaded = false;
+    }
+  };
+
+  // TODO: have some code for tabbed sidebar browsing.
+  window.updateSidebar = function() {
+      $('#qualities').empty();
+      var scene = dendryUI.game.scenes[window.statusTab];
+      dendryUI.dendryEngine._runActions(scene.onArrival);
+      var displayContent = dendryUI.dendryEngine._makeDisplayContent(scene.content, true);
+      $('#qualities').append(dendryUI.contentToHTML.convert(displayContent));
+  };
+
+  // Populates the right-hand "news"/leadership sidebar.
+  // Expects a scene with id "news" in your .dry source whose content
+  // holds whatever flavor text/leader info you want shown there.
+  // Update that scene's content via @set actions as the game state changes.
+  window.updateNewsSidebar = function() {
+      $('#news').empty();
+      var scene = dendryUI.game.scenes[window.newsTab || 'news'];
+      if (!scene) {
+          // No "news" scene defined yet in the source - nothing to show.
+          return;
+      }
+      if (scene.onArrival) {
+          dendryUI.dendryEngine._runActions(scene.onArrival);
+      }
+      var displayContent = dendryUI.dendryEngine._makeDisplayContent(scene.content, true);
+      $('#news').append(dendryUI.contentToHTML.convert(displayContent));
+  };
+
+  window.changeTab = function(newTab, tabId) {
+      if (tabId == 'poll_tab' && dendryUI.dendryEngine.state.qualities.historical_mode) {
+          window.alert('Polls are not available in historical mode.');
+          return;
+      }
+      var tabButton = document.getElementById(tabId);
+      var tabButtons = document.getElementsByClassName('tab_button');
+      for (i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].className = tabButtons[i].className.replace(' active', '');
+      }
+      tabButton.className += ' active';
+      window.statusTab = newTab;
+      window.updateSidebar();
+  };
+
+  window.onDisplayContent = function() {
+      window.updateSidebar();
+      window.updateNewsSidebar();
+  };
+
+  /*
+   * This function copied from the code for Infinite Space Battle Simulator
+   *
+   * quality - a number between max and min
+   * qualityName - the name of the quality
+   * max and min - numbers
+   * colors - if true/1, will use some color scheme - green to yellow to red for high to low
+   * */
+  window.generateBar = function(quality, qualityName, max, min, colors) {
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      var value = document.createElement('div');
+      value.className = 'barValue';
+      var width = (quality - min)/(max - min);
+      if (width > 1) {
+          width = 1;
+      } else if (width < 0) {
+          width = 0;
+      }
+      value.style.width = Math.round(width*100) + '%';
+      if (colors) {
+          value.style.backgroundColor = window.probToColor(width*100);
+      }
+      bar.textContent = qualityName + ': ' + quality;
+      if (colors) {
+          bar.textContent += '/' + max;
+      }
+      bar.appendChild(value);
+      return bar;
+  };
+
+// --- Boombox music player ---
+window._musicPlaylist = [
+    { name: "Wide is my Motherland", src: "music/1987_1989/WideIsMyMotherland.mp3" },
+    { name: "Where does the Motherland Begin?", src: "music/1987_1989/WDTMB.mp3" },
+    { name: "Aviamarch", src: "music/1987_1989/Aviamarch.mp3" },
+    { name: "Farewell of Slavianka", src: "music/1987_1989/Slavianka.mp3" },
+    { name: "Smuglianka", src: "music/1987_1989/Smuglianka.mp3" }
+];
+window._musicIndex = 0;
+window._musicAudio = new Audio();
+window._musicPlaying = false;
+
+window._musicLoadTrack = function(index) {
+    var track = window._musicPlaylist[index];
+    window._musicAudio.src = track.src;
+    var nameEl = document.getElementById('boombox-track-name');
+    if (nameEl) {
+        nameEl.textContent = track.name;
+        nameEl.style.fontSize = '0.7em';
+        // shrink in small steps until the text actually fits its container
+        var attempts = 0;
+        while (nameEl.scrollWidth > nameEl.clientWidth && attempts < 15) {
+            var current = parseFloat(getComputedStyle(nameEl).fontSize);
+            nameEl.style.fontSize = (current - 1) + 'px';
+            attempts++;
+        }
+    }
+};
+
+window._musicPlay = function() {
+    if (!window._musicAudio.src) {
+        window._musicLoadTrack(window._musicIndex);
+    }
+    if (window._musicPlaying) {
+        window._musicAudio.pause();
+        window._musicPlaying = false;
+    } else {
+        window._musicAudio.play();
+        window._musicPlaying = true;
+    }
+    window._musicUpdateUI();
+};
+
+window._musicNext = function() {
+    window._musicIndex = (window._musicIndex + 1) % window._musicPlaylist.length;
+    window._musicLoadTrack(window._musicIndex);
+    if (window._musicPlaying) { window._musicAudio.play(); }
+    window._musicUpdateUI();
+};
+
+window._musicPrev = function() {
+    window._musicIndex = (window._musicIndex - 1 + window._musicPlaylist.length) % window._musicPlaylist.length;
+    window._musicLoadTrack(window._musicIndex);
+    if (window._musicPlaying) { window._musicAudio.play(); }
+    window._musicUpdateUI();
+};
+
+window._musicSetVolume = function(value) {
+    window._musicAudio.volume = value / 100;
+};
+// apply the initial volume on load
+window._musicAudio.volume = 0.7;
+
+window._musicUpdateUI = function() {
+    var playBtn = document.getElementById('boombox-play');
+    var boombox = document.getElementById('boombox');
+    if (playBtn) { playBtn.textContent = window._musicPlaying ? '⏸' : '▶'; }
+    if (boombox) { boombox.classList.toggle('playing', window._musicPlaying); }
+};
+
+// auto-advance to next track when one ends (cycles the playlist automatically)
+window._musicAudio.addEventListener('ended', function() {
+    window._musicNext();
+});
+window._musicAudio.addEventListener('error', function(e) {
+    console.error('Audio error on track', window._musicIndex, window._musicPlaylist[window._musicIndex], window._musicAudio.error);
+});
+  window.justLoaded = true;
+  window.statusTab = "status";
+  window.newsTab = "news";
+  window.dendryModifyUI = main;
+  console.log("Modifying stats: see dendryUI.dendryEngine.state.qualities");
+
+  window.onload = function() {
+    window.dendryUI.loadSettings({show_portraits: false});
+    if (window.dendryUI.dark_mode) {
+        document.body.classList.add('dark-mode');
+    }
+    window.pinnedCardsDescription = "Advisor cards - actions are only usable once per 6 months.";
+  };
+
+}());

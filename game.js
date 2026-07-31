@@ -349,4 +349,20 @@ window._musicAudio.addEventListener('error', function(e) {
     window.pinnedCardsDescription = "Advisor cards - actions are only usable once per 6 months.";
   };
 
+  function updateAfghanWarWidget() {
+    var existing = document.querySelector('.afghan-war-widget');
+    if (existing) existing.remove();
+    
+    if (dendryUI.game && dendryUI.game.qualities.minigame >= 1 && !dendryUI.game.qualities.afghan_war_ended) {
+        var warDiv = document.createElement('div');
+        warDiv.className = 'afghan-war-widget';
+        warDiv.innerHTML = '<img src="img/AfghanistanDeckImage.jpg" class="afghan-war-img"><div class="afghan-war-label">Afghan War</div>';
+        warDiv.onclick = function() {
+            dendryUI.dendryEngine.goToScene('afghanistanwar');
+        };
+        var leaderArea = document.querySelector('.leader-card');
+        if (leaderArea) leaderArea.parentNode.insertBefore(warDiv, leaderArea.nextSibling);
+    }
+}
+
 }());

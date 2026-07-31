@@ -519,6 +519,30 @@ a.card:focus .card-tooltip, a.card:hover .card-tooltip {
   margin: 0;
 }
 
+.afghan-war-widget {
+  display: inline-block;
+  cursor: pointer;
+  border: 5px solid var(--card-border-color);
+  margin-left: 1em;
+  margin-bottom: 0.5em;
+  text-align: center;
+  vertical-align: top;
+  max-width: 180px;
+}
+.afghan-war-widget:hover {
+  border-color: var(--link-color);
+}
+.afghan-war-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+.afghan-war-label {
+  font-family: var(--title-font);
+  font-size: 0.9em;
+  padding: 0.3em 0;
+}
+
 /* Boombox music widget */
 #boombox {
   margin-top: 1em;

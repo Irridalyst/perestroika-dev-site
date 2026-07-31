@@ -353,7 +353,7 @@ window._musicAudio.addEventListener('error', function(e) {
     var existing = document.querySelector('.afghan-war-widget');
     if (existing) existing.remove();
 
-    var Q = dendryUI.game && dendryUI.game.qualities;
+    var Q = dendryUI && dendryUI.game && dendryUI.game.qualities;
     if (!Q) return;
 
     if (Q.minigame >= 1 && !Q.afghan_war_ended) {
@@ -370,8 +370,9 @@ window._musicAudio.addEventListener('error', function(e) {
 
 document.addEventListener('DOMContentLoaded', function() {
     var observer = new MutationObserver(function() {
-        if (document.querySelector('.leader-card')) {
-            updateAfghanWarWidget();
+        var leaderCard = document.querySelector('.leader-card');
+        if (leaderCard && !document.querySelector('.afghan-war-widget')) {
+            setTimeout(updateAfghanWarWidget, 100);
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
